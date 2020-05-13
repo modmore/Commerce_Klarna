@@ -1,0 +1,101 @@
+<div class="c-klarna-gateway">
+    <div id="c-klarna{{ method }}-errors" class="c-creditcard-payment-errors"></div>
+    <div class="c-klarna-payment-options">
+        {% for pmc in supported_methods %}
+            <div id="c-klarna-{{ pmc.identifier }}"></div>
+        {% else %}
+            Helaas, niet beschikbaar.
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://x.klarnacdn.net/kp/lib/v1/api.js" async></script>
+
+<script type="text/javascript">
+    window.klarnaAsyncCallback = function () {
+        // First init with the client token
+        Klarna.Payments.init({
+            client_token: '{{ client_token }}'
+        });
+
+        // Then load up each widget
+        {% for pmc in supported_methods %}
+            Klarna.Payments.load({
+                container: '#c-klarna-{{ pmc.identifier }}',
+                payment_method_category: '{{ pmc.identifier }}'
+            }, function (res) {
+                console.log('load:', res);
+            });
+        {% else %}
+            console.warn('No Klarna payment options available for order.');
+        {% endfor %}
+    };
+
+    CommercePayments.onReady(function() {
+        var form = CommercePayments.getForm(),
+            errorBox = document.getElementById('c-klarna{{ method }}-errors'),
+            btns = form.getElementsByTagName('button');
+
+        function showError(msg) {
+            var errmsg = document.createElement('p');
+            errmsg.innerText = msg;
+            errorBox.innerHTML = '';
+            errorBox.appendChild(errmsg);
+        }
+
+        CommercePayments.addEventListener(form, 'submit', function (e) {
+            // Only act when this method was selected
+            if (Number(CommercePayments.getChosenMethodID()) !== {{ method }}) {
+                return;
+            }
+
+            // Stop submitting
+            e.preventDefault();
+
+            // Make sure the rest of the form is valid (based on html5 validation attributes)
+            if (form.checkValidity && !form.checkValidity()) {
+                alert('Please correct the errors in the form first.');
+                return false;
+            }
+
+            // Disable the submit button to prevent repeated clicks
+            for (var j = 0; j < btns.length; j++) {
+                btns[j].setAttribute('disabled', true);
+            }
+
+            Klarna.Payments.authorize({
+                payment_method_category: 'pay_later', /* @todo make dynamic based on selection */
+            }, {
+                // not sending any new data - everything we know has already been submitted server-side
+            }, function(res) {
+                console.log('authorize:', res);
+
+                // Success!
+                if (res.show_form && res.approved) {
+                    var success = document.createElement('input');
+                    success.setAttribute('type', 'hidden');
+                    success.setAttribute('name', 'authorization_token');
+                    success.setAttribute('value', res.authorization_token);
+                    form.appendChild(success);
+                    form.submit();
+                    return;
+                }
+
+                if (res.show_form && !res.approved) {
+                    alert('An error occurred, please correct the details in the form.');
+                }
+
+                if (!res.show_form && !res.approved) {
+                    alert('Sorry, Klarna is not currently available. Please choose a different payment method.');
+                }
+                // Re-enable buttons
+                for (var j = 0; j < btns.length; j++) {
+                    btns[j].removeAttribute('disabled');
+                }
+            });
+
+        });
+    });
+</script>
+
+{{ dump() }}

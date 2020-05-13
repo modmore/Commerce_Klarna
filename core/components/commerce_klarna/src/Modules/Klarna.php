@@ -4,8 +4,10 @@ namespace modmore\Commerce_Klarna\Modules;
 use modmore\Commerce\Admin\Configuration\About\ComposerPackages;
 use modmore\Commerce\Admin\Sections\SimpleSection;
 use modmore\Commerce\Events\Admin\PageEvent;
+use modmore\Commerce\Events\Gateways;
 use modmore\Commerce\Modules\BaseModule;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Twig\Loader\ChainLoader;
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -32,15 +34,17 @@ class Klarna extends BaseModule {
         // Load our lexicon
         $this->adapter->loadLexicon('commerce_klarna:default');
 
+        $dispatcher->addListener(\Commerce::EVENT_GET_PAYMENT_GATEWAYS, [$this, 'addGateway']);
+
         // Add the xPDO package, so Commerce can detect the derivative classes
 //        $root = dirname(dirname(__DIR__));
 //        $path = $root . '/model/';
 //        $this->adapter->loadPackage('commerce_klarna', $path);
 
         // Add template path to twig - 1.1+ way
-//        /** @var ChainLoader $loader */
-//        $root = dirname(dirname(__DIR__));
-//        $this->commerce->view()->addTemplatesPath($root . '/templates/');
+        /** @var ChainLoader $loader */
+        $root = dirname(__DIR__, 2);
+        $this->commerce->view()->addTemplatesPath($root . '/templates/');
 
         // Add composer libraries to the about section (v0.12+)
         $dispatcher->addListener(\Commerce::EVENT_DASHBOARD_LOAD_ABOUT, [$this, 'addLibrariesToAbout']);
@@ -51,6 +55,11 @@ class Klarna extends BaseModule {
         $fields = [];
 
         return $fields;
+    }
+
+    public function addGateway(Gateways $event)
+    {
+        $event->addGateway(\modmore\Commerce_Klarna\Gateways\Klarna::class, $this->adapter->lexicon('commerce_klarna.gateway'));
     }
 
     public function addLibrariesToAbout(PageEvent $event)
