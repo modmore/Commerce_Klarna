@@ -48,14 +48,10 @@
             errorBox.appendChild(errmsg);
         }
 
-        CommercePayments.addEventListener(form, 'submit', function (e) {
-            // Only act when this method was selected
-            if (Number(CommercePayments.getChosenMethodID()) !== {{ method }}) {
-                return;
-            }
-
+        CommercePayments.onSubmit({{ method }}, function (e) {
             // Stop submitting
             e.preventDefault();
+            e.stopPropagation();
 
             // Make sure the rest of the form is valid (based on html5 validation attributes)
             if (form.checkValidity && !form.checkValidity()) {

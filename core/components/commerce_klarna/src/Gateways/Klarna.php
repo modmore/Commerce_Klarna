@@ -177,10 +177,20 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
 
         if ($response->isSuccess()) {
             $data = $response->getData();
-            $transaction->log("Created order {$data['order_id']}", \comTransactionLog::SOURCE_GATEWAY);
+            $transaction->log("Created Klarna order {$data['order_id']}", \comTransactionLog::SOURCE_GATEWAY);
+            
+            // Generate the order reference, so we can assign it in Klarna and the customer can see it.
+            $order->setReference();
+            $transaction->log("Set Commerce order reference to {$order->get('reference')}", \comTransactionLog::SOURCE_GATEWAY);
+            $updatedRefs = $this->client->request("/ordermanagement/v1/orders/{$data['order_id']}/merchant-references", [
+                'merchant_reference1' => $order->get('reference'),
+                'merchant_reference2' => $order->get('id') . ' | ' . $this->commerce->adapter->lexicon('commerce.transaction') . ' ' . $transaction->get('id'),
+            ], 'PATCH');
+            if (!$updatedRefs->isSuccess()) {
+                $transaction->log('Could not update Klarna merchant references with order reference: ' . print_r($updatedRefs->getData(), true), \comTransactionLog::SOURCE_GATEWAY);
+            }
         }
 
-        $this->commerce->adapter->log(1, print_r($response, true));
         return new SubmitAuthorization($response);
     }
 
@@ -273,6 +283,9 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
             $sessionData['merchant_reference1'] = $ref;
         }
         $sessionData['merchant_reference2'] = $order->get('id');
+        if ($transaction) {
+            $sessionData['merchant_reference2'] .= ' | ' . $this->commerce->adapter->lexicon('commerce.transaction') . ' ' . $transaction->get('id');
+        }
         $sessionData['merchant_urls'] = [
             'confirmation' => $this->getConfirmationUrl($transaction),
             // 'notification'
