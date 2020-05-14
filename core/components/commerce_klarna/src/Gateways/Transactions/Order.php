@@ -74,11 +74,17 @@ class Order implements TransactionInterface {
     {
         $extra = [];
 
-        if (array_key_exists('order_id', $this->orderData)) {
-            $extra['klarna_order_id'] = $this->orderData['order_id'];
+        if (array_key_exists('status', $this->orderData)) {
+            $extra['klarna_status'] = $this->orderData['status'];
+        }
+        if (array_key_exists('fraud_status', $this->orderData)) {
+            $extra['klarna_fraud_status'] = $this->orderData['fraud_status'];
         }
         if (array_key_exists('klarna_reference', $this->orderData)) {
             $extra['klarna_reference'] = $this->orderData['klarna_reference'];
+        }
+        if (array_key_exists('order_id', $this->orderData)) {
+            $extra['klarna_order_id'] = $this->orderData['order_id'];
         }
         if (array_key_exists('refunded_amount', $this->orderData)) {
             $extra['klarna_refunded_amount'] = number_format($this->orderData['refunded_amount'] / 100, 2);
@@ -88,12 +94,6 @@ class Order implements TransactionInterface {
         }
         if (array_key_exists('captured_amount', $this->orderData)) {
             $extra['klarna_captured_amount'] = number_format($this->orderData['captured_amount'] / 100, 2);
-        }
-        if (array_key_exists('status', $this->orderData)) {
-            $extra['klarna_status'] = $this->orderData['status'];
-        }
-        if (array_key_exists('fraud_status', $this->orderData)) {
-            $extra['klarna_fraud_status'] = $this->orderData['fraud_status'];
         }
         if (array_key_exists('authorized_payment_method', $this->orderData)) {
             $extra['klarna_authorized_payment_method'] = $this->orderData['authorized_payment_method'];
