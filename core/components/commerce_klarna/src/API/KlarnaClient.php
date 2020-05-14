@@ -27,7 +27,7 @@ class KlarnaClient {
             ]);
             return Response::from($response);
         } catch (GuzzleException $e) {
-            $errorResponse = new Response(false);
+            $errorResponse = new Response(false, 0);
             $errorResponse->addError(get_class($e), $e->getMessage());
             return $errorResponse;
         }
