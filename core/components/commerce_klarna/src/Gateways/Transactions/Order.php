@@ -86,14 +86,39 @@ class Order implements TransactionInterface {
         if (array_key_exists('order_id', $this->orderData)) {
             $extra['klarna_order_id'] = $this->orderData['order_id'];
         }
-        if (array_key_exists('refunded_amount', $this->orderData)) {
-            $extra['klarna_refunded_amount'] = number_format($this->orderData['refunded_amount'] / 100, 2);
+        if (array_key_exists('captured_amount', $this->orderData)) {
+            $extra['klarna_captured_amount'] = number_format($this->orderData['captured_amount'] / 100, 2);
         }
         if (array_key_exists('remaining_authorized_amount', $this->orderData)) {
             $extra['klarna_remaining_authorized_amount'] = number_format($this->orderData['remaining_authorized_amount'] / 100, 2);
         }
-        if (array_key_exists('captured_amount', $this->orderData)) {
-            $extra['klarna_captured_amount'] = number_format($this->orderData['captured_amount'] / 100, 2);
+        if (array_key_exists('expires_at', $this->orderData)) {
+            $extra['klarna_expires_at'] = $this->orderData['expires_at'];
+        }
+        if (array_key_exists('captures', $this->orderData) && is_array($this->orderData['captures'])) {
+            $extra['klarna_captures'] = [];
+            foreach ($this->orderData['captures'] as $capture) {
+                $extra['klarna_captures'][] = [
+                    'id' => $capture['capture_id'],
+                    'reference' => $capture['klarna_reference'],
+                    'captured_amount' =>  number_format($capture['captured_amount'] / 100, 2),
+                    'captured_at' => $capture['captured_at'],
+                ];
+            }
+
+        }
+        if (array_key_exists('refunded_amount', $this->orderData)) {
+            $extra['klarna_refunded_amount'] = number_format($this->orderData['refunded_amount'] / 100, 2);
+        }
+        if (array_key_exists('refunds', $this->orderData) && is_array($this->orderData['refunds'])) {
+            $extra['klarna_refunds'] = [];
+            foreach ($this->orderData['refunds'] as $refund) {
+                $extra['klarna_refunds'][] = [
+                    'id' => $refund['refund_id'],
+                    'captured_amount' =>  number_format($refund['refunded_amount'] / 100, 2),
+                    'captured_at' => $refund['refunded_at'],
+                ];
+            }
         }
         if (array_key_exists('authorized_payment_method', $this->orderData)) {
             $extra['klarna_authorized_payment_method'] = $this->orderData['authorized_payment_method'];

@@ -16,13 +16,20 @@ $_lang['commerce_klarna.password'] = 'API Password';
 $_lang['commerce_klarna.auto_capture'] = 'Enable auto-capture';
 $_lang['commerce_klarna.auto_capture.desc'] = 'Allows orders to be automatically captured upon creation. Due to a sub-optimal user experience, Klarna recommends against using this unless you have an agreement with Klarna to do so.';
 
+$_lang['commerce.add_CaptureKlarnaOrder'] = 'Capture Klarna Order';
+$_lang['commerce.CaptureKlarnaOrder'] = 'Capture Klarna Order';
+
+// properties assigned to transactions
 $_lang['commerce.klarna_order_id'] = 'Order ID';
 $_lang['commerce.klarna_correlation_id'] = 'Correlation (log)  ID';
 $_lang['commerce.klarna_reference'] = 'Short Reference';
 $_lang['commerce.klarna_session_id'] = 'Session ID';
 $_lang['commerce.klarna_refunded_amount'] = 'Refunded amount';
 $_lang['commerce.klarna_remaining_authorized_amount'] = 'Remaining authorized amount';
+$_lang['commerce.klarna_expires_at'] = 'Expires at';
 $_lang['commerce.klarna_captured_amount'] = 'Captured amount';
+$_lang['commerce.klarna_captures'] = 'Captures';
+$_lang['commerce.klarna_refunds'] = 'Refunds';
 $_lang['commerce.klarna_status'] = 'Status';
 $_lang['commerce.klarna_fraud_status'] = 'Fraud Status';
 $_lang['commerce.klarna_redirect'] = 'Bounce (redirect) URL';

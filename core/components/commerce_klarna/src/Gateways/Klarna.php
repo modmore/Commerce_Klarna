@@ -213,6 +213,61 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
     }
 
     /**
+     * Called by the CaptureKlarnaOrder status change or a manual action, this updates and captures an order
+     *
+     * @param comOrder $order
+     * @param comTransaction $transaction
+     * @return bool
+     */
+    public function captureOrder(comOrder $order, comTransaction $transaction): bool
+    {
+        $klarnaOrder = $transaction->get('reference');
+        $sessionData = $this->getSessionData($order, $transaction);
+        $captureData = [
+            'captured_amount' => $order->get('total'),
+            'description' => 'Order ' . $order->get('reference') . ' at ' . $this->commerce->adapter->getOption('site_name'), // @todo i18n
+            'reference' => "Order {$order->get('reference')} // #{$order->get('id')} // Transaction {$transaction->get('id')}",
+            'order_lines' => $sessionData['order_lines'],
+            'shipping_info' => [],
+            'shipping_delay' => 0, // @todo consider a gateway/status change action configuration for this? not supported by klarna by default
+        ];
+
+        foreach ($order->getShipments() as $shipment) {
+            $shippingInfo = array_filter([
+                'shipping_company' => $this->commerce->adapter->getOption('commerce_klarna.shipping_company'), // @todo create settings in build
+                'shipping_method' => $this->commerce->adapter->getOption('commerce_klarna.shipping_method'),
+                'tracking_number' => $shipment->get('tracking_reference'),
+                'tracking_uri' => $shipment->getTrackingURL(),
+            ]);
+            if (!empty($shippingInfo)) {
+                $captureData['shipping_info'][] = $shippingInfo;
+            }
+        }
+
+        $amt = $order->getCurrency()->format($captureData['captured_amount']);
+        $attempt = $this->client->request("/ordermanagement/v1/orders/{$klarnaOrder}/captures", $captureData, 'POST');
+        if ($attempt->isSuccess()) {
+            $transaction->log("Captured {$amt} on Klarna order {$klarnaOrder}", \comTransactionLog::SOURCE_DASHBOARD);
+            $getUpdatedOrder = $this->client->request("ordermanagement/v1/orders/{$klarnaOrder}", [], 'GET');
+            if ($getUpdatedOrder->isSuccess()) {
+                $updatedData = $getUpdatedOrder->getData();
+                $updatedOrder = new Order($getUpdatedOrder);
+
+                $transaction->set('amount', $updatedData['captured_amount']);
+                $transaction->setProperties($updatedOrder->getExtraInformation(), true);
+                $transaction->save();
+
+                // Recalculate in case of item changes
+                $order->calculate();
+            }
+            return true;
+        }
+
+        $transaction->log("Failed capturing {$amt} from Klarna order {$klarnaOrder}: " . print_r($attempt->getData(), true), \comTransactionLog::SOURCE_DASHBOARD);
+        return false;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getGatewayProperties(comPaymentMethod $method)
