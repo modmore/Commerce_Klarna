@@ -4,6 +4,7 @@ namespace modmore\Commerce_Klarna\Modules;
 use modmore\Commerce\Admin\Configuration\About\ComposerPackages;
 use modmore\Commerce\Admin\Sections\SimpleSection;
 use modmore\Commerce\Events\Admin\PageEvent;
+use modmore\Commerce\Events\Admin\TransactionActions;
 use modmore\Commerce\Events\Gateways;
 use modmore\Commerce\Modules\BaseModule;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -35,6 +36,7 @@ class Klarna extends BaseModule {
         $this->adapter->loadLexicon('commerce_klarna:default');
 
         $dispatcher->addListener(\Commerce::EVENT_GET_PAYMENT_GATEWAYS, [$this, 'addGateway']);
+        $dispatcher->addListener(\Commerce::EVENT_DASHBOARD_TRANSACTION_ACTIONS, [$this, 'addTransactionAction']);
 
         // Add the xPDO package, so Commerce can detect the derivative classes
         $root = dirname(__DIR__, 2);
@@ -60,6 +62,24 @@ class Klarna extends BaseModule {
     public function addGateway(Gateways $event)
     {
         $event->addGateway(\modmore\Commerce_Klarna\Gateways\Klarna::class, $this->adapter->lexicon('commerce_klarna.gateway'));
+    }
+
+    public function addTransactionAction(TransactionActions $event)
+    {
+//        $transaction = $event->getTransaction();
+//        $method = $transaction->getMethod();
+//        if (!$method) {
+//            return;
+//        }
+//        $gateway = $method->getGatewayInstance();
+//        if (!($gateway instanceof \modmore\Commerce_Klarna\Gateways\Klarna)) {
+//            return;
+//        }
+//
+//        $event->addAction(
+//            (new Action())
+//                ->setTitle('Hello world')
+//        );
     }
 
     public function addLibrariesToAbout(PageEvent $event)
