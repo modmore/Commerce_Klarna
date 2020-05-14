@@ -37,9 +37,9 @@ class Klarna extends BaseModule {
         $dispatcher->addListener(\Commerce::EVENT_GET_PAYMENT_GATEWAYS, [$this, 'addGateway']);
 
         // Add the xPDO package, so Commerce can detect the derivative classes
-//        $root = dirname(dirname(__DIR__));
-//        $path = $root . '/model/';
-//        $this->adapter->loadPackage('commerce_klarna', $path);
+        $root = dirname(__DIR__, 2);
+        $path = $root . '/model/';
+        $this->adapter->loadPackage('commerce_klarna', $path);
 
         // Add template path to twig - 1.1+ way
         /** @var ChainLoader $loader */
