@@ -1,16 +1,33 @@
 <div class="c-klarna-gateway">
     <div id="c-klarna{{ method }}-errors" class="c-creditcard-payment-errors"></div>
-    <div class="c-klarna-payment-options">
-        {% for pmc in supported_methods %}
-            <h3>
-                <img src="{{ pmc.asset_urls.descriptive }}" alt="{{ pmc.name }}">
-                {{ pmc.name }}
-            </h3>
 
-            <div id="c-klarna-{{ pmc.identifier }}"></div>
-        {% else %}
-            Excuses, het is voor deze bestelling niet mogelijk om met Klarna te betalen. (@TODO: vertaling)
-        {% endfor %}
+{#    {{ dump(supported_methods) }}#}
+    <div class="c-payment-method-options__container">
+        <ul class="c-payment-method-options">
+            {% for pmc in supported_methods %}
+                <li class="c-payment-method-option">
+                    <input
+                            type="radio"
+                            name="c-payment-klarna-{{ method }}-option"
+                            value="{{ pmc.identifier }}"
+                            class="c-payment-method-option__input"
+                            id="c-pm{{ method }}-option-{{ pmc.identifier }}-{{ loop.index }}"
+                            {% if loop.index == 1 %}checked="checked"{% endif %}
+                    >
+
+                    <label class="c-payment-method-option__label" for="c-pm{{ method }}-option-{{ pmc.identifier }}-{{ loop.index }}">
+                        <img class="c-payment-method-option__image" src="{{ pmc.asset_urls.descriptive }}" alt="{{ pmc.name }}">
+                        <span class="c-payment-method-option__name">{{ pmc.name }}</span>
+                    </label>
+
+                    <div class="c-payment-method-issuers__container">
+                        <div id="c-klarna-{{ pmc.identifier }}-{{ loop.index }}"></div>
+                    </div>
+                </li>
+            {% else %}
+                Excuses, het is voor deze bestelling niet mogelijk om met Klarna te betalen. (@TODO: vertaling)
+            {% endfor %}
+        </ul>
     </div>
 </div>
 
@@ -26,7 +43,7 @@
         // Then load up each widget
         {% for pmc in supported_methods %}
             Klarna.Payments.load({
-                container: '#c-klarna-{{ pmc.identifier }}',
+                container: '#c-klarna-{{ pmc.identifier }}-{{ loop.index }}',
                 payment_method_category: '{{ pmc.identifier }}'
             }, function (res) {
                 console.log('load:', res);
