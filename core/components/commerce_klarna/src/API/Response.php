@@ -15,11 +15,16 @@ class Response {
     private $data;
 
     private $errors = [];
+    /**
+     * @var int
+     */
+    private $statusCode;
 
-    public function __construct(bool $success, array $data = [])
+    public function __construct(bool $success, int $statusCode, array $data = [])
     {
         $this->success = $success;
         $this->data = $data;
+        $this->statusCode = $statusCode;
     }
 
     public function addError(string $code, string $message): void
@@ -31,16 +36,16 @@ class Response {
     {
         $body = $response->getBody()->getContents();
         $statusCode = $response->getStatusCode();
+        $success = strpos($statusCode, '2') === 0;
         $data = json_decode($body, true);
+
         if (!is_array($data)) {
-            $inst = new static(false);
-            $inst->addError('http_' . $statusCode, $body);
-            return $inst;
+            $data = [];
         }
-        $success = $statusCode === 200;
 
         $inst = new static(
             $success,
+            $statusCode,
             $data
         );
 
@@ -69,5 +74,13 @@ class Response {
     public function getData(): array
     {
         return $this->data;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
     }
 }

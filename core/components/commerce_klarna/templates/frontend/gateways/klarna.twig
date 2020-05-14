@@ -2,9 +2,14 @@
     <div id="c-klarna{{ method }}-errors" class="c-creditcard-payment-errors"></div>
     <div class="c-klarna-payment-options">
         {% for pmc in supported_methods %}
+            <h3>
+                <img src="{{ pmc.asset_urls.descriptive }}" alt="{{ pmc.name }}">
+                {{ pmc.name }}
+            </h3>
+
             <div id="c-klarna-{{ pmc.identifier }}"></div>
         {% else %}
-            Helaas, niet beschikbaar.
+            Excuses, het is voor deze bestelling niet mogelijk om met Klarna te betalen. (@TODO: vertaling)
         {% endfor %}
     </div>
 </div>
@@ -82,7 +87,8 @@
                 }
 
                 if (res.show_form && !res.approved) {
-                    alert('An error occurred, please correct the details in the form.');
+                    // alert('An error occurred, please correct the details in the form.');
+                    // klarna shows errors in its own popup
                 }
 
                 if (!res.show_form && !res.approved) {
