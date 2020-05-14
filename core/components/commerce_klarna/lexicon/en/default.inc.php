@@ -18,6 +18,8 @@ $_lang['commerce_klarna.auto_capture.desc'] = 'Allows orders to be automatically
 
 $_lang['commerce.add_CaptureKlarnaOrder'] = 'Capture Klarna Order';
 $_lang['commerce.CaptureKlarnaOrder'] = 'Capture Klarna Order';
+$_lang['commerce.add_ReleaseKlarnaOrder'] = 'Release remaining Klarna authorization';
+$_lang['commerce.ReleaseKlarnaOrder'] = 'Release remaining Klarna authorization';
 
 // properties assigned to transactions
 $_lang['commerce.klarna_order_id'] = 'Order ID';

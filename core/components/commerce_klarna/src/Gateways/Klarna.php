@@ -248,23 +248,50 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
         $attempt = $this->client->request("/ordermanagement/v1/orders/{$klarnaOrder}/captures", $captureData, 'POST');
         if ($attempt->isSuccess()) {
             $transaction->log("Captured {$amt} on Klarna order {$klarnaOrder}", \comTransactionLog::SOURCE_DASHBOARD);
-            $getUpdatedOrder = $this->client->request("ordermanagement/v1/orders/{$klarnaOrder}", [], 'GET');
-            if ($getUpdatedOrder->isSuccess()) {
-                $updatedData = $getUpdatedOrder->getData();
-                $updatedOrder = new Order($getUpdatedOrder);
-
-                $transaction->set('amount', $updatedData['captured_amount']);
-                $transaction->setProperties($updatedOrder->getExtraInformation(), true);
-                $transaction->save();
-
-                // Recalculate in case of item changes
-                $order->calculate();
-            }
+            $this->_updateTransaction($order, $transaction);
             return true;
         }
 
-        $transaction->log("Failed capturing {$amt} from Klarna order {$klarnaOrder}: " . print_r($attempt->getData(), true), \comTransactionLog::SOURCE_DASHBOARD);
+        $transaction->log("Failed capturing {$amt} from Klarna order {$klarnaOrder}: " . print_r($attempt->getData(), true), \comTransactionLog::SOURCE_GATEWAY);
         return false;
+    }
+
+    /**
+     * Called by the ReleaseKlarnaOrder status change or a manual action, this releases a remaining authorization amount
+     * or cancels the order entirely if it has no captures.
+     *
+     * @param comOrder $order
+     * @param comTransaction $transaction
+     * @return void
+     */
+    public function releaseOrder(comOrder $order, comTransaction $transaction): void
+    {
+        $orderId = $transaction->get('reference');
+        $status = $transaction->getProperty('klarna_status');
+        if ($status === 'PART_CAPTURED') {
+            $response = $this->client->request("ordermanagement/v1/orders/{$orderId}/release-remaining-authorization", []);
+            if ($response->isSuccess()) {
+                $transaction->log("Released remaining authorization for Klarna order {$orderId}", \comTransactionLog::SOURCE_GATEWAY);
+            }
+            else {
+                $transaction->log("Could not release authorization for order {$orderId}: " . print_r($response->getData(), true), \comTransactionLog::SOURCE_GATEWAY);
+            }
+        }
+
+        elseif ($status === 'AUTHORIZED') {
+            $response = $this->client->request("ordermanagement/v1/orders/{$transaction->get('reference')}/cancel", []);
+            if ($response->isSuccess()) {
+                $transaction->log("Cancelled authorization for Klarna order {$transaction->get('reference')}", \comTransactionLog::SOURCE_GATEWAY);
+            }
+            else {
+                $transaction->log("Could not cancel authorization for order {$orderId}: " . print_r($response->getData(), true), \comTransactionLog::SOURCE_GATEWAY);
+            }
+        }
+        else {
+            $transaction->log("Can not release authorization for an order with status {$status}", \comTransactionLog::SOURCE_GATEWAY);
+        }
+
+        $this->_updateTransaction($order, $transaction);
     }
 
     /**
@@ -450,5 +477,21 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
         }
 
         return $sessionData;
+    }
+
+    private function _updateTransaction(comOrder $order, comTransaction $transaction)
+    {
+        $getUpdatedOrder = $this->client->request("ordermanagement/v1/orders/{$transaction->get('reference')}", [], 'GET');
+        if ($getUpdatedOrder->isSuccess()) {
+            $updatedData = $getUpdatedOrder->getData();
+            $updatedOrder = new Order($getUpdatedOrder);
+
+            $transaction->set('amount', $updatedData['captured_amount']);
+            $transaction->setProperties($updatedOrder->getExtraInformation(), true);
+            $transaction->log('Transaction details updated from Klarna.', \comTransactionLog::SOURCE_GATEWAY);
+            $transaction->save();
+
+            $order->calculate();
+        }
     }
 }
