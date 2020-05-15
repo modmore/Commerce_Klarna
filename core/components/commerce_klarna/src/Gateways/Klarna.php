@@ -68,21 +68,11 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
     {
         $session = $this->_getOpenSession($order);
 
-        $cats = $session['payment_method_categories'];
-        // hardcode to show an extra option until support enables new ones
-        $cats[] = [
-            'identifier' => 'pay_now',
-            'name' => 'Nu betalen (Dummy, werkt niet)',
-            'asset_urls' => [
-                'descriptive' => 'https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg',
-            ]
-        ];
-
         $data = [
             'method' => $this->method->get('id'),
             'session_id' => $session['session_id'],
             'client_token' => $session['client_token'],
-            'supported_methods' => $cats, //$session['payment_method_categories'] + $session['payment_method_categories'] + $session['payment_method_categories'],
+            'supported_methods' => $session['payment_method_categories'],
         ];
 
         try {

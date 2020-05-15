@@ -5,7 +5,7 @@
     <div class="c-payment-method-options__container">
         <ul class="c-payment-method-options">
             {% for pmc in supported_methods %}
-                <li class="c-payment-method-option">
+                <li class="c-payment-method-option" id="c-klarna-{{ pmc.identifier }}-wrapper">
                     <input
                             type="radio"
                             name="klarna{{ method }}-option"
@@ -25,7 +25,7 @@
                     </div>
                 </li>
             {% else %}
-                Excuses, het is voor deze bestelling niet mogelijk om met Klarna te betalen. (@TODO: vertaling)
+                {{ lex('commerce_klarna.not_available') }}
             {% endfor %}
         </ul>
     </div>
@@ -46,7 +46,13 @@
                 container: '#c-klarna-{{ pmc.identifier }}',
                 payment_method_category: '{{ pmc.identifier }}'
             }, function (res) {
-                console.log('load:', res);
+                console.debug('[klarna] load:', res);
+                if (res.show_form === false) {
+                    var wrapperEl = document.getElementById('c-klarna-{{ pmc.identifier }}-wrapper');
+                    if (wrapperEl) {
+                        wrapperEl.style.display = 'none';
+                    }
+                }
             });
         {% else %}
             console.warn('No Klarna payment options available for order.');
@@ -72,7 +78,7 @@
 
             // Make sure the rest of the form is valid (based on html5 validation attributes)
             if (form.checkValidity && !form.checkValidity()) {
-                alert('Please correct the errors in the form first.');
+                alert('{{ lex('commerce_klarna.fix_form')|escape('js') }}');
                 return false;
             }
 
@@ -92,7 +98,7 @@
             }, {
                 // not sending any new data - everything we know has already been submitted server-side
             }, function(res) {
-                console.debug('authorize:', res);
+                console.debug('[klarna] authorize:', res);
 
                 // Success!
                 if (res.show_form && res.approved) {
@@ -110,7 +116,7 @@
                 }
 
                 if (!res.show_form && !res.approved) {
-                    alert('Sorry, Klarna is not currently available. Please choose a different payment method.');
+                    alert('{{ lex('commerce_klarna.not_approved')|escape('js') }}');
                 }
 
                 // Re-enable buttons

@@ -16,6 +16,10 @@ $_lang['commerce_klarna.password'] = 'API Password';
 $_lang['commerce_klarna.auto_capture'] = 'Enable auto-capture';
 $_lang['commerce_klarna.auto_capture.desc'] = 'Allows orders to be automatically captured upon creation. Due to a sub-optimal user experience, Klarna recommends against using this unless you have an agreement with Klarna to do so.';
 
+$_lang['commerce_klarna.fix_form'] = 'Please correct the errors in the form first.';
+$_lang['commerce_klarna.not_available'] = 'Unfortunately it\'s not currently possible to pay this order with Klarna. Please choose a different payment method.';
+$_lang['commerce_klarna.not_approved'] = 'Sorry, Klarna has not allowed this payment option to be used. Please choose a different payment method.';
+
 $_lang['commerce.add_CaptureKlarnaOrder'] = 'Capture Klarna Order';
 $_lang['commerce.CaptureKlarnaOrder'] = 'Capture Klarna Order';
 $_lang['commerce.add_ReleaseKlarnaOrder'] = 'Release remaining Klarna authorization';
