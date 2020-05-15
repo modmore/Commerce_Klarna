@@ -8,20 +8,20 @@
                 <li class="c-payment-method-option">
                     <input
                             type="radio"
-                            name="c-payment-klarna-{{ method }}-option"
+                            name="klarna{{ method }}-option"
                             value="{{ pmc.identifier }}"
                             class="c-payment-method-option__input"
-                            id="c-pm{{ method }}-option-{{ pmc.identifier }}-{{ loop.index }}"
+                            id="c-pm{{ method }}-option-{{ pmc.identifier }}"
                             {% if loop.index == 1 %}checked="checked"{% endif %}
                     >
 
-                    <label class="c-payment-method-option__label" for="c-pm{{ method }}-option-{{ pmc.identifier }}-{{ loop.index }}">
+                    <label class="c-payment-method-option__label" for="c-pm{{ method }}-option-{{ pmc.identifier }}">
                         <img class="c-payment-method-option__image" src="{{ pmc.asset_urls.descriptive }}" alt="{{ pmc.name }}">
                         <span class="c-payment-method-option__name">{{ pmc.name }}</span>
                     </label>
 
                     <div class="c-payment-method-issuers__container">
-                        <div id="c-klarna-{{ pmc.identifier }}-{{ loop.index }}"></div>
+                        <div id="c-klarna-{{ pmc.identifier }}"></div>
                     </div>
                 </li>
             {% else %}
@@ -43,7 +43,7 @@
         // Then load up each widget
         {% for pmc in supported_methods %}
             Klarna.Payments.load({
-                container: '#c-klarna-{{ pmc.identifier }}-{{ loop.index }}',
+                container: '#c-klarna-{{ pmc.identifier }}',
                 payment_method_category: '{{ pmc.identifier }}'
             }, function (res) {
                 console.log('load:', res);
@@ -76,17 +76,23 @@
                 return false;
             }
 
+            var paymentOption = form['klarna{{ method }}-option'] ? form['klarna{{ method }}-option'].value : false;
+            if (!paymentOption) {
+                alert('Please choose a Klarna payment option.');
+                return false;
+            }
+
             // Disable the submit button to prevent repeated clicks
             for (var j = 0; j < btns.length; j++) {
                 btns[j].setAttribute('disabled', true);
             }
 
             Klarna.Payments.authorize({
-                payment_method_category: 'pay_later', /* @todo make dynamic based on selection */
+                payment_method_category: paymentOption
             }, {
                 // not sending any new data - everything we know has already been submitted server-side
             }, function(res) {
-                console.log('authorize:', res);
+                console.debug('authorize:', res);
 
                 // Success!
                 if (res.show_form && res.approved) {
@@ -100,19 +106,20 @@
                 }
 
                 if (res.show_form && !res.approved) {
-                    // alert('An error occurred, please correct the details in the form.');
                     // klarna shows errors in its own popup
                 }
 
                 if (!res.show_form && !res.approved) {
                     alert('Sorry, Klarna is not currently available. Please choose a different payment method.');
                 }
+
                 // Re-enable buttons
                 for (var j = 0; j < btns.length; j++) {
                     btns[j].removeAttribute('disabled');
                 }
             });
 
+            return false;
         });
     });
 </script>
