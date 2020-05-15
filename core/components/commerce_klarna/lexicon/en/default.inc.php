@@ -4,7 +4,7 @@ $_lang['commerce_klarna'] = 'Klarna';
 $_lang['commerce_klarna.description'] = 'Support Klarna payment methods in Commerce.';
 
 // gateway properties
-$_lang['commerce_klarna.gateway'] = 'Klarna (Pay Now)';
+$_lang['commerce_klarna.gateway'] = 'Klarna';
 $_lang['commerce_klarna.endpoint'] = 'Region';
 $_lang['commerce_klarna.endpoint.desc'] = 'Which of the available API regions (endpoints) to use; this must match your Klarna account. Commerce automatically switches between live and playground API URLs in the selected region based on the Commerce mode.';
 $_lang['commerce_klarna.endpoint.eu'] = 'Europe';
@@ -15,6 +15,11 @@ $_lang['commerce_klarna.uid'] = 'API Username (UID)';
 $_lang['commerce_klarna.password'] = 'API Password';
 $_lang['commerce_klarna.auto_capture'] = 'Enable auto-capture';
 $_lang['commerce_klarna.auto_capture.desc'] = 'Allows orders to be automatically captured upon creation. Due to a sub-optimal user experience, Klarna recommends against using this unless you have an agreement with Klarna to do so.';
+$_lang['commerce_klarna.allowed_options'] = 'Allowed payment options';
+$_lang['commerce_klarna.allowed_options.desc'] = 'Which of the payment options offered by Klarna to allow. Note that Klarna may, or may not, provide certain option based on your merchant account and the pre-qualification checks for the customer. This means that you\'ll only see a selected payment option if Klarna deems it available as well.';
+$_lang['commerce_klarna.allowed_options.pay_now'] = 'Pay Now';
+$_lang['commerce_klarna.allowed_options.pay_later'] = 'Pay Later';
+$_lang['commerce_klarna.allowed_options.pay_over_time'] = 'Slice It, or Pay Later by Card';
 
 $_lang['commerce_klarna.fix_form'] = 'Please correct the errors in the form first.';
 $_lang['commerce_klarna.not_available'] = 'Unfortunately it\'s not currently possible to pay this order with Klarna. Please choose a different payment method.';

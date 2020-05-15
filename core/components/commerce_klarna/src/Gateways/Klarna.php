@@ -10,6 +10,7 @@ use modmore\Commerce\Admin\Widgets\Form\CheckboxField;
 use modmore\Commerce\Admin\Widgets\Form\DescriptionField;
 use modmore\Commerce\Admin\Widgets\Form\PasswordField;
 use modmore\Commerce\Admin\Widgets\Form\SelectField;
+use modmore\Commerce\Admin\Widgets\Form\SelectMultipleField;
 use modmore\Commerce\Admin\Widgets\Form\TextField;
 use modmore\Commerce\Exceptions\ViewException;
 use modmore\Commerce\Gateways\Exceptions\TransactionException;
@@ -54,7 +55,8 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
     {
         try {
             $session = $this->_getOpenSession($order);
-            return count($session['payment_method_categories']) > 0;
+            $categories = $this->filterCategories($session['payment_method_categories']);
+            return count($categories) > 0;
         }
         catch (TransactionException $e) {
             return false;
@@ -72,7 +74,7 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
             'method' => $this->method->get('id'),
             'session_id' => $session['session_id'],
             'client_token' => $session['client_token'],
-            'supported_methods' => $session['payment_method_categories'],
+            'supported_methods' => $this->filterCategories($session['payment_method_categories']),
         ];
 
         try {
@@ -329,6 +331,18 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
             ]
         ]);
 
+        $fields[] = new SelectMultipleField($this->commerce, [
+            'name' => 'properties[allowed_options]',
+            'label' => $this->commerce->adapter->lexicon('commerce_klarna.allowed_options'),
+            'description' => $this->commerce->adapter->lexicon('commerce_klarna.allowed_options.desc'),
+            'value' => $method->getProperty('allowed_options', ['pay_now', 'pay_later', 'pay_over_time']),
+            'options' => [
+                ['value' => 'pay_now', 'label' => $this->commerce->adapter->lexicon('commerce_klarna.allowed_options.pay_now')],
+                ['value' => 'pay_later', 'label' => $this->commerce->adapter->lexicon('commerce_klarna.allowed_options.pay_later')],
+                ['value' => 'pay_over_time', 'label' => $this->commerce->adapter->lexicon('commerce_klarna.allowed_options.pay_over_time')],
+            ]
+        ]);
+
         $fields[] = new CheckboxField($this->commerce, [
             'name' => 'properties[auto_capture]',
             'label' => $this->commerce->adapter->lexicon('commerce_klarna.auto_capture'),
@@ -493,5 +507,25 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
 
             $order->calculate();
         }
+    }
+
+    /**
+     * Filters provided by categories by gateway properties
+     *
+     * @param array $categories
+     * @return array
+     */
+    private function filterCategories($categories)
+    {
+        $allowed = $this->method->getProperty('allowed_options', []);
+
+        $filtered = [];
+        foreach ($categories as $category) {
+            if (in_array($category['identifier'], $allowed, true)) {
+                $filtered[] = $category;
+            }
+        }
+
+        return $filtered;
     }
 }
