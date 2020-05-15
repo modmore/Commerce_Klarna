@@ -33,7 +33,7 @@ class KlarnaClient {
         }
     }
 
-    private function _getEndpoint(string $region, bool $testMode)
+    private function _getEndpoint(string $region, bool $testMode): string
     {
         switch ($region) {
             case 'EU':
@@ -44,6 +44,6 @@ class KlarnaClient {
                 return !$testMode ? 'https://api-oc.klarna.com/' : 'https://api-oc.playground.klarna.com/';
         }
 
-        return false;
+        return '';
     }
 }
