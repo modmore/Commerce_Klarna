@@ -1,5 +1,5 @@
-Klarna for Commerce 0.1.0-pl
+Klarna for Commerce 1.0.0-rc1
 ---------------------------------
-Released on
+Released on 2020-05-15
 
 - First release
