@@ -110,6 +110,8 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
                     $checkSession = $this->client->request('payments/v1/sessions/' . $sessionId, [], 'GET');
                     if ($checkSession->isSuccess()) {
                         $data = $checkSession->getData();
+                        $supported = implode(', ', array_map(function ($v) { return $v['identifier']; }, $data['payment_method_categories']));
+                        $order->log("Updated Klarna session {$sessionId}, allowed methods: {$supported}");
                     }
                 }
                 
@@ -130,7 +132,7 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
             $order->setProperty(self::SESSION_ID, $sessionId);
 
             $supported = implode(', ', array_map(function ($v) { return $v['identifier']; }, $data['payment_method_categories']));
-            $order->log("Created Klarna session with ID {$data['session_id']} and allowed methods: {$supported}");
+            $order->log("Created Klarna session {$data['session_id']} | Allowed methods: {$supported}");
             $order->save();
 
             return [
