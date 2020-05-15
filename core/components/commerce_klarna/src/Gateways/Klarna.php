@@ -72,7 +72,7 @@ class Klarna implements GatewayInterface, ConditionallyAvailableGatewayInterface
         // hardcode to show an extra option until support enables new ones
         $cats[] = [
             'identifier' => 'pay_now',
-            'name' => 'Nu betalen (TEST)',
+            'name' => 'Nu betalen (Dummy, werkt niet)',
             'asset_urls' => [
                 'descriptive' => 'https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg',
             ]
