@@ -6,4 +6,10 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'modmore\\Commerce_Klarna\\API\\KlarnaClient' => $baseDir . '/src/API/KlarnaClient.php',
+    'modmore\\Commerce_Klarna\\API\\Response' => $baseDir . '/src/API/Response.php',
+    'modmore\\Commerce_Klarna\\Gateways\\Klarna' => $baseDir . '/src/Gateways/Klarna.php',
+    'modmore\\Commerce_Klarna\\Gateways\\Transactions\\Order' => $baseDir . '/src/Gateways/Transactions/Order.php',
+    'modmore\\Commerce_Klarna\\Gateways\\Transactions\\SubmitAuthorization' => $baseDir . '/src/Gateways/Transactions/SubmitAuthorization.php',
+    'modmore\\Commerce_Klarna\\Modules\\Klarna' => $baseDir . '/src/Modules/Klarna.php',
 );
