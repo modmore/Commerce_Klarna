@@ -7,7 +7,7 @@ use modmore\Commerce\Events\Admin\PageEvent;
 use modmore\Commerce\Events\Admin\TransactionActions;
 use modmore\Commerce\Events\Gateways;
 use modmore\Commerce\Modules\BaseModule;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use modmore\Commerce\Dispatcher\EventDispatcher;
 use Twig\Loader\ChainLoader;
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
